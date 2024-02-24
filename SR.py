@@ -44,6 +44,7 @@ def get_SRLevels(
     assert (
         df.shape[0] > bars_for_peak
     ), "df rows should be greater than min_bars_for peak"
+    srlevels = SRLevels()
     cl = RawPriceClusterLevels(
         None,
         merge_percent=merge_percent,
@@ -52,10 +53,12 @@ def get_SRLevels(
     )
     cl.fit(df)
     levels = cl.levels
+    if not levels:
+        # if there are no levels
+        return SRLevels()
     scorer = TouchScorer()
     scorer.fit(levels, df.copy())
 
-    srlevels = SRLevels()
     for level, score in zip(cl.levels, scorer.scores):
         srlevels.add(SRLevel(level["price"], level["peak_count"], score[2].score))
     return srlevels
